@@ -24,8 +24,6 @@
     state: "present"
   delegate_to: "{{ groups['galera_all'][0] }}"
   no_log: true
-  tags:
-    - cloudkitty-db-setup
 
 - name: Grant access to the DB for the service
   mysql_user:
@@ -42,25 +40,15 @@
   with_items:
     - "localhost"
     - "%"
-  tags:
-    - cloudkitty-db-setup
 
 - name: Perform a cloudkitty DB sync
   command: "{{ cloudkitty_bin }}/cloudkitty-dbsync upgrade"
   become: yes
   become_user: "{{ cloudkitty_system_user_name }}"
   changed_when: false
-  tags:
-    - cloudkitty-db-sync
-    - cloudkitty-setup
-    - cloudkitty-command-bin
 
 - name: Init cloudkitty storage backend
   command: "{{ cloudkitty_bin }}/cloudkitty-storage-init"
   become: yes
   become_user: "{{ cloudkitty_system_user_name }}"
   changed_when: false
-  tags:
-    - cloudkitty-db-sync
-    - cloudkitty-setup
-    - cloudkitty-command-bin

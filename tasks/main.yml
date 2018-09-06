@@ -22,6 +22,7 @@
     - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
     - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
     - "{{ ansible_distribution | lower }}.yml"
+    - "{{ ansible_os_family | lower }}-{{ ansible_distribution_version.split('.')[0] }}.yml"
     - "{{ ansible_os_family | lower }}.yml"
   tags:
     - always
@@ -40,16 +41,39 @@
     - always
 
 - include: cloudkitty_pre_install.yml
+  tags:
+    - cloudkitty-install
+
 - include: cloudkitty_install.yml
+  tags:
+    - cloudkitty-install
+
 - include: cloudkitty_post_install.yml
+  static: no
+  tags:
+    - cloudkitty-config
 
 - include: cloudkitty_domain_setup.yml
   when: inventory_hostname == groups['cloudkitty_all'][0]
+  tags:
+    - cloudkitty-config
 
 - include: cloudkitty_db_setup.yml
   when: inventory_hostname == groups['cloudkitty_all'][0]
+  tags:
+    - cloudkitty-config
 
 - include: "cloudkitty_init_{{ ansible_service_mgr }}.yml"
+  static: no
+  tags:
+    - cloudkitty-setup
+
+- include: cloudkitty_apache.yml
+  static: no
+  when:
+    - cloudkitty_use_mod_wsgi | bool
+  tags:
+    - cloudkitty-setup
 
 - name: Flush handlers
   meta: flush_handlers

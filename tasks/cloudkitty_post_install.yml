@@ -37,7 +37,21 @@
       dest: "/etc/cloudkitty/policy.json-{{ cloudkitty_venv_tag }}"
       config_overrides: "{{ cloudkitty_policy_overrides }}"
       config_type: "json"
+    - src: "metrics.yml.j2"
+      dest: "/etc/cloudkitty/metrics.yml"
+      config_overrides: "{{ cloudkitty_metrics_overrides }}"
+      config_type: "yaml"
   notify:
     - Restart cloudkitty services
-  tags:
-    - cloudkitty-config
+    - Restart Apache
+
+- name: Drop Cloudkitty WSGI Configs
+  template:
+    src: cloudkitty-wsgi.py.j2
+    dest: /var/www/cgi-bin/cloudkitty/cloudkitty-api
+    owner: "{{ cloudkitty_system_user_name }}"
+    group: "{{ cloudkitty_system_group_name }}"
+    mode: "0755"
+  when: cloudkitty_use_mod_wsgi | bool
+  notify:
+    - Restart Apache

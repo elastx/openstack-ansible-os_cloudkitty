@@ -44,15 +44,15 @@ cloudkitty_venv_download: "{{ not cloudkitty_developer_mode | bool }}"
 cloudkitty_venv_download_url: http://127.0.0.1/venvs/untagged/ubuntu/cloudkitty.tgz
 
 cloudkitty_git_repo: https://git.openstack.org/openstack/cloudkitty
-cloudkitty_git_install_branch: "15d0a7dd0543f00fa3886d287b980e65b346d949" #frozen head of master, no "stable/queens" branch yet.
+cloudkitty_git_install_branch: stable/pike
 
 cloudkitty_developer_constraints:
   - "git+{{ cloudkitty_git_repo }}@{{ cloudkitty_git_install_branch }}#egg=cloudkitty"
 
 cloudkitty_developer_mode: false
 cloudkitty_notification_topics: notifications
-cloudkitty_services: compute
-cloudkitty_collector: ceilometer
+cloudkitty_collect_services: compute
+cloudkitty_collector: gnocchi
 cloudkitty_service_project_domain_id: default
 cloudkitty_service_project_name: "service"
 cloudkitty_service_user_domain_id: default
@@ -63,12 +63,14 @@ cloudkitty_output_backend: cloudkitty.backend.file.FileBackend
 cloudkitty_output_pipeline: osrf
 cloudkitty_output_basepath: /var/cloudkitty/reports
 
+cloudkitty_galera_address: "{{ galera_address | default('127.0.0.1') }}"
 cloudkitty_galera_database: cloudkitty
 cloudkitty_galera_user: cloudkitty
 
 ## Service Type and Data
 cloudkitty_service_region: RegionOne
 cloudkitty_service_name: cloudkitty
+cloudkitty_service_type: rating
 cloudkitty_service_port: 8089
 cloudkitty_service_proto: http
 cloudkitty_service_publicuri_proto: "{{ openstack_service_publicuri_proto | default(cloudkitty_service_proto) }}"
@@ -81,22 +83,52 @@ cloudkitty_service_adminurl: "{{ cloudkitty_service_adminuri }}/"
 cloudkitty_service_internaluri: "{{ cloudkitty_service_internaluri_proto }}://{{ internal_lb_vip_address }}:{{ cloudkitty_service_port }}"
 cloudkitty_service_internalurl: "{{ cloudkitty_service_internaluri }}/"
 
+#: Set this to false to disable API service through Apache + mod_wsgi
+cloudkitty_use_mod_wsgi: true
+
+# Apache setup
+cloudkitty_apache_log_level: info
+cloudkitty_apache_servertokens: "Prod"
+cloudkitty_apache_serversignature: "Off"
+cloudkitty_wsgi_threads: 1
+cloudkitty_wsgi_processes_max: 16
+cloudkitty_wsgi_processes: "{{ [[ansible_processor_vcpus|default(1), 1] | max * 2, cloudkitty_wsgi_processes_max] | min }}"
+
+# set cloudkitty_ssl to true to enable SSL configuration on the cloudkitty containers
+cloudkitty_ssl: false
+cloudkitty_ssl_cert: /etc/ssl/certs/cloudkitty.pem
+cloudkitty_ssl_key: /etc/ssl/private/cloudkitty.key
+cloudkitty_ssl_ca_cert: /etc/ssl/certs/cloudkitty-ca.pem
+cloudkitty_ssl_protocol: "{{ ssl_protocol | default('ALL -SSLv2 -SSLv3') }}"
+cloudkitty_ssl_cipher_suite: "{{ ssl_cipher_suite | default('ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:!aNULL:!MD5:!DSS') }}"
+
+# if using a self-signed certificate, set this to true to regenerate it
+cloudkitty_ssl_self_signed_regen: false
+cloudkitty_ssl_self_signed_subject: "/C=US/ST=Texas/L=San Antonio/O=IT/CN={{ internal_lb_vip_address }}/subjectAltName=IP.1={{ external_lb_vip_address }}"
+
+# Set these in user_variables to deploy custom certificates
+#cloudkitty_user_ssl_cert: <path to cert on ansible deployment host>
+#cloudkitty_user_ssl_key: <path to cert on ansible deployment host>
+#cloudkitty_user_ssl_ca_cert: <path to cert on ansible deployment host>
+
 cloudkitty_cloudkitty_conf_overrides: {}
 cloudkitty_policy_overrides: {}
 cloudkitty_api_paste_ini_overrides: {}
-
 cloudkitty_api_init_overrides: {}
 cloudkitty_processor_init_overrides: {}
+cloudkitty_metrics_overrides: {}
 
 ## Service Name-Group Mapping
 cloudkitty_services:
   cloudkitty-api:
     group: cloudkitty_api
     service_name: cloudkitty-api
+    service_enabled: "{{ cloudkitty_use_mod_wsgi | ternary(false, true) }}"
     init_config_overrides: "{{ cloudkitty_api_init_overrides }}"
   cloudkitty-processor:
     group: cloudkitty_api
     service_name: cloudkitty-processor
+    service_enabled: true
     init_config_overrides: "{{ cloudkitty_processor_init_overrides }}"
 
 cloudkitty_pip_packages:
@@ -105,6 +137,7 @@ cloudkitty_pip_packages:
   - msgpack-python
   - PyMySQL
   - python-memcached
+  - tooz
 
 cloudkitty_requires_pip_packages:
   - virtualenv
