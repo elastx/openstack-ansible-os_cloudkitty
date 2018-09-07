@@ -20,8 +20,6 @@
     name: "{{ cloudkitty_system_group_name }}"
     state: "present"
     system: "yes"
-  tags:
-    - cloudkitty-group
 
 - name: Create the cloudkitty system user
   user:
@@ -32,8 +30,6 @@
     system: "yes"
     createhome: "yes"
     home: "{{ cloudkitty_system_home_folder }}"
-  tags:
-    - cloudkitty-user
 
 - name: Create cloudkitty dir
   file:
@@ -45,8 +41,18 @@
   with_items:
     - { path: "/openstack", mode: "0755", owner: "root", group: "root" }
     - { path: "/etc/cloudkitty" }
-  tags:
-    - cloudkitty-dirs
+
+- name: Create Apache mod_wsgi dirs
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner|default(cloudkitty_system_user_name) }}"
+    group: "{{ item.owner|default(cloudkitty_system_group_name) }}"
+    mode: "{{ item.mode|default('0755') }}"
+  with_items:
+    - { path: "/var/www/cgi-bin", owner: root, group: root }
+    - { path: "/var/www/cgi-bin/cloudkitty" }
+  when: cloudkitty_use_mod_wsgi | bool
 
 - name: Test for log directory or link
   shell: |
@@ -59,9 +65,6 @@
   register: log_dir
   failed_when: false
   changed_when: log_dir.rc != 0
-  tags:
-    - cloudkitty-dirs
-    - cloudkitty-logs
 
 - name: Create cloudkitty log dir
   file:
@@ -73,9 +76,6 @@
   with_items:
     - { path: "/var/log/cloudkitty" }
   when: log_dir.rc != 0
-  tags:
-    - cloudkitty-dirs
-    - cloudkitty-logs
 
 - name: Create cloudkitty report dir
   file:
@@ -84,5 +84,3 @@
     owner: "{{ cloudkitty_system_user_name }}"
     group: "{{ cloudkitty_system_group_name }}"
     mode: 0755
-  tags:
-    - cloudkitty-dirs

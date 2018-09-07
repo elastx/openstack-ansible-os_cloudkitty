@@ -34,9 +34,6 @@
       {{ item }}
       {% endfor %}
   when: cloudkitty_developer_mode | bool
-  tags:
-    - cloudkitty-install
-    - cloudkitty-pip-packages
 
 - name: Install requires pip packages
   pip:
@@ -50,9 +47,6 @@
   until: install_packages|success
   retries: 5
   delay: 2
-  tags:
-    - cloudkitty-install
-    - cloudkitty-pip-packages
 
 - name: Retrieve checksum for venv download
   uri:
@@ -60,9 +54,6 @@
     return_content: yes
   register: cloudkitty_venv_checksum
   when: cloudkitty_venv_download | bool
-  tags:
-    - cloudkitty-install
-    - cloudkitty-pip-packages
 
 - name: Attempt venv download
   get_url:
@@ -71,18 +62,12 @@
     checksum: "sha1:{{ cloudkitty_venv_checksum.content | trim }}"
   register: cloudkitty_get_venv
   when: cloudkitty_venv_download | bool
-  tags:
-    - cloudkitty-install
-    - cloudkitty-pip-packages
 
 - name: Remove existing venv
   file:
     path: "{{ cloudkitty_bin | dirname }}"
     state: absent
   when: cloudkitty_get_venv | changed
-  tags:
-    - cloudkitty-install
-    - cloudkitty-pip-packages
 
 - name: Create cloudkitty venv dir
   file:
@@ -90,9 +75,6 @@
     state: directory
   register: cloudkitty_venv_dir
   when: cloudkitty_get_venv | changed
-  tags:
-    - cloudkitty-install
-    - cloudkitty-pip-packages
 
 - name: Unarchive pre-built venv
   unarchive:
@@ -102,9 +84,6 @@
   when: cloudkitty_get_venv | changed
   notify:
     - Restart cloudkitty services
-  tags:
-    - cloudkitty-install
-    - cloudkitty-pip-packages
 
 - name: Install pip packages
   pip:
@@ -123,9 +102,6 @@
   when: cloudkitty_get_venv | failed or cloudkitty_get_venv | skipped
   notify:
     - Restart cloudkitty services
-  tags:
-    - cloudkitty-install
-    - cloudkitty-pip-packages
 
 # NOTE(odyssey4me):
 # We reinitialize the venv to ensure that the right
@@ -146,6 +122,10 @@
   when: cloudkitty_get_venv | changed
   tags:
     - skip_ansible_lint
-  tags:
-    - cloudkitty-install
-    - cloudkitty-pip-packages
+
+- name: Record the venv tag deployed
+  ini_file:
+    dest: "/etc/ansible/facts.d/openstack_ansible.fact"
+    section: cloudkitty
+    option: venv_tag
+    value: "{{ cloudkitty_venv_tag }}"
