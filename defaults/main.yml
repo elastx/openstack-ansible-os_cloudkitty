@@ -116,6 +116,7 @@ cloudkitty_policy_overrides: {}
 cloudkitty_api_paste_ini_overrides: {}
 cloudkitty_api_init_overrides: {}
 cloudkitty_processor_init_overrides: {}
+cloudkitty_metrics_overrides: {}
 
 ## Service Name-Group Mapping
 cloudkitty_services:
