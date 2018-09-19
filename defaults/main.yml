@@ -63,6 +63,7 @@ cloudkitty_output_backend: cloudkitty.backend.file.FileBackend
 cloudkitty_output_pipeline: osrf
 cloudkitty_output_basepath: /var/cloudkitty/reports
 
+cloudkitty_galera_address: "{{ galera_address | default('127.0.0.1') }}"
 cloudkitty_galera_database: cloudkitty
 cloudkitty_galera_user: cloudkitty
 
@@ -135,6 +136,7 @@ cloudkitty_pip_packages:
   - msgpack-python
   - PyMySQL
   - python-memcached
+  - tooz
 
 cloudkitty_requires_pip_packages:
   - virtualenv

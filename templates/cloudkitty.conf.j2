@@ -72,3 +72,6 @@ auth_section = keystone_authtoken
 
 [tenant_fetcher]
 backend = keystone
+
+[orchestrator]
+coordination_url = mysql://{{ cloudkitty_galera_user }}:{{ cloudkitty_container_mysql_password }}@{{ cloudkitty_galera_address }}/{{ cloudkitty_galera_database }}
