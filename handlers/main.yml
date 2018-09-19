@@ -23,7 +23,7 @@
 - name: Stop services
   service:
     name: "{{ item.value.service_name }}"
-    enabled: yes
+    enabled: "{{ item.value.service_enabled }} | bool | ternary('yes', 'no')"
     state: "stopped"
     daemon_reload: "{{ (ansible_service_mgr == 'systemd') | ternary('yes', omit) }}"
   with_dict: "{{ cloudkitty_services }}"
@@ -57,7 +57,9 @@
     state: "started"
     daemon_reload: "{{ (ansible_service_mgr == 'systemd') | ternary('yes', omit) }}"
   with_dict: "{{ cloudkitty_services }}"
-  when: inventory_hostname in groups[item.value.group]
+  when:
+    - inventory_hostname in groups[item.value.group]
+    - item.value.service_enabled | bool
   register: _start
   until: _start | success
   retries: 5
