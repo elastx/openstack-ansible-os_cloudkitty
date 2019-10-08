@@ -1,15 +1,16 @@
 # {{ ansible_managed }}
 
 metrics:
-  cpu:
+  vcpus:
     unit: instance
     alt_name: instance
     groupby:
       - id
       - project_id
     metadata:
-      - flavor
       - flavor_id
+      - flavor_name
+      - image_ref
       - vcpus
     mutate: NUMBOOL
     extra_args:
