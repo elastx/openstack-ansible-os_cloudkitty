@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+{% if venv_python_executable == 'python2' %}
+LoadModule wsgi_module /usr/lib/apache2/modules/mod_wsgi.so
+{% else %}
+LoadModule wsgi_module "/openstack/venvs/cloudkitty-{{ cloudkitty_venv_tag }}/lib/python3.5/site-packages/mod_wsgi/server/mod_wsgi-py35.cpython-35m-x86_64-linux-gnu.so"
+WSGIPythonHome "/openstack/venvs/cloudkitty-{{ cloudkitty_venv_tag }}"
+{% endif %}

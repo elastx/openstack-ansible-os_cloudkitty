@@ -16,6 +16,9 @@
 ## Verbosity Options
 debug: False
 
+#python venv executable
+cloudkitty_venv_python_executable: "{{ openstack_venv_python_executable | default('python3') }}"
+
 # Set the package install state for distribution and pip packages
 # Options are 'present' and 'latest'
 cloudkitty_package_state: "latest"
@@ -38,13 +41,8 @@ cloudkitty_system_home_folder: "/var/lib/{{ cloudkitty_system_user_name }}"
 cloudkitty_venv_tag: untagged
 cloudkitty_bin: "/openstack/venvs/cloudkitty-{{ cloudkitty_venv_tag }}/bin"
 
-# venv_download, even when true, will use the fallback method of building the
-# venv from scratch if the venv download fails.
-cloudkitty_venv_download: "{{ not cloudkitty_developer_mode | bool }}"
-cloudkitty_venv_download_url: http://127.0.0.1/venvs/untagged/ubuntu/cloudkitty.tgz
-
 cloudkitty_git_repo: https://git.openstack.org/openstack/cloudkitty
-cloudkitty_git_install_branch: stable/queens
+cloudkitty_git_install_branch: stable/rocky
 
 cloudkitty_developer_constraints:
   - "git+{{ cloudkitty_git_repo }}@{{ cloudkitty_git_install_branch }}#egg=cloudkitty"
@@ -131,13 +129,21 @@ cloudkitty_services:
     service_enabled: true
     init_config_overrides: "{{ cloudkitty_processor_init_overrides }}"
 
+
+cloudkitty_pip_install_args: "{{ pip_install_options | default('') }}"
+cloudkitty_venv_rebuild: no
+
 cloudkitty_pip_packages:
-  - cloudkitty
+  - git+git://github.com/openstack/cloudkitty.git@5e16701f4787336dae9732f42399ed64192ec3e4
   - cryptography
   - msgpack-python
+  - osprofiler
   - PyMySQL
   - python-memcached
+  - SQLAlchemy>=1.0.10
   - tooz
+  - uwsgi
+  - mod_wsgi
 
 cloudkitty_requires_pip_packages:
   - virtualenv

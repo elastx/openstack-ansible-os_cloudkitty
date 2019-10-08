@@ -44,7 +44,22 @@
   tags:
     - cloudkitty-install
 
-- include: cloudkitty_install.yml
+- name: Install the python venv
+  import_role:
+    name: "python_venv_build"
+  vars:
+    venv_python_executable: "{{ cloudkitty_venv_python_executable }}"
+    venv_build_distro_package_list: "{{ cloudkitty_devel_distro_packages }}"
+    venv_install_destination_path: "{{ cloudkitty_bin | dirname }}"
+    venv_install_distro_package_list: "{{ cloudkitty_distro_packages }}"
+    venv_pip_install_args: "{{ cloudkitty_pip_install_args }}"
+    venv_pip_packages: "{{ cloudkitty_pip_packages }}"
+    venv_facts_when_changed:
+      - section: "cloudkitty"
+        option: "venv_tag"
+        value: "{{ cloudkitty_venv_tag }}"
+    venv_rebuild: "{{ cloudkitty_venv_rebuild | default('no') }}"
+    venv_wheel_build_enable: false
   tags:
     - cloudkitty-install
 
