@@ -15,7 +15,7 @@
 import os
 
 activate_this = os.path.expanduser("{{ cloudkitty_bin }}/activate_this.py")
-{% if venv_python_executable == 'python2' %}
+{% if cloudkitty_venv_python_executable == 'python2' %}
 execfile(activate_this, dict(__file__=activate_this))
 {% else %}
 exec(compile(open(activate_this).read(), activate_this, 'exec'), dict(__file__=activate_this))
