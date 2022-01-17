@@ -16,8 +16,10 @@ end
 
 Vagrant.configure(2) do |config|
   config.vm.provider "virtualbox" do |v|
-    v.memory = 4096
+    v.memory = 6144
     v.cpus = 2
+    # https://github.com/hashicorp/vagrant/issues/9524
+    v.customize ["modifyvm", :id, "--audio", "none"]
   end
 
   config.vm.synced_folder ".", "/vagrant", type: "rsync"
@@ -34,12 +36,12 @@ Vagrant.configure(2) do |config|
     xenial.vm.box = "ubuntu/xenial64"
   end
 
-  config.vm.define "opensuse422" do |leap422|
-    leap422.vm.box = "opensuse/openSUSE-42.2-x86_64"
-  end
-
   config.vm.define "opensuse423" do |leap423|
     leap423.vm.box = "opensuse/openSUSE-42.3-x86_64"
+  end
+
+  config.vm.define "opensuse150" do |leap150|
+    leap150.vm.box = "opensuse/openSUSE-15.0-x86_64"
   end
 
   config.vm.define "centos7" do |centos7|

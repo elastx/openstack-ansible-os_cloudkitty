@@ -44,6 +44,8 @@
   notify:
     - Restart cloudkitty services
     - Restart Apache
+  tags:
+    - cloudkitty-config
 
 - name: Drop Cloudkitty WSGI Configs
   template:
@@ -55,3 +57,5 @@
   when: cloudkitty_use_mod_wsgi | bool
   notify:
     - Restart Apache
+  tags:
+    - cloudkitty-config

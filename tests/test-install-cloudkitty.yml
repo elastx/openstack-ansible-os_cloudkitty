@@ -15,27 +15,9 @@
 
 - name: Playbook for role testing
   hosts: cloudkitty_all
-  user: root
-  become: true
+  remote_user: root
   gather_facts: true
-  pre_tasks:
-    - name: Ensure Rabbitmq vhost
-      rabbitmq_vhost:
-        name: "{{ cloudkitty_rabbitmq_vhost }}"
-        state: "present"
-      delegate_to: "{{ hostvars[groups['rabbitmq_all'][0]]['ansible_host'] }}"
-    - name: Ensure rabbitmq user
-      rabbitmq_user:
-        user: "{{ cloudkitty_rabbitmq_userid }}"
-        password: "{{ cloudkitty_rabbitmq_password }}"
-        vhost: "{{ cloudkitty_rabbitmq_vhost }}"
-        configure_priv: ".*"
-        read_priv: ".*"
-        write_priv: ".*"
-        state: "present"
-      no_log: true
-      delegate_to: "{{ hostvars[groups['rabbitmq_all'][0]]['ansible_host'] }}"
-  roles:
-    - role: "os_cloudkitty"
   vars_files:
     - common/test-vars.yml
+  roles:
+    - role: "os_cloudkitty"

@@ -22,31 +22,17 @@
     - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
     - "{{ ansible_os_family | lower }}-{{ ansible_distribution_major_version | lower }}.yml"
     - "{{ ansible_distribution | lower }}.yml"
-    - "{{ ansible_os_family | lower }}-{{ ansible_distribution_version.split('.')[0] }}.yml"
     - "{{ ansible_os_family | lower }}.yml"
   tags:
     - always
 
-- name: Check init system
-  command: cat /proc/1/comm
-  changed_when: false
-  register: _pid1_name
-  tags:
-    - always
-
-- name: Set the name of pid1
-  set_fact:
-    pid1_name: "{{ _pid1_name.stdout }}"
-  tags:
-    - always
-
-- include: cloudkitty_pre_install.yml
+- include_tasks: cloudkitty_pre_install.yml
   tags:
     - cloudkitty-install
 
 - name: Install the python venv
   import_role:
-    name: "ansible-role-python_venv_build"
+    name: "python_venv_build"
   vars:
     venv_python_executable: "{{ cloudkitty_venv_python_executable }}"
     venv_build_distro_package_list: "{{ cloudkitty_devel_distro_packages }}"
@@ -63,32 +49,74 @@
   tags:
     - cloudkitty-install
 
-- include: cloudkitty_post_install.yml
+- include_tasks: cloudkitty_post_install.yml
   static: no
   tags:
     - cloudkitty-config
 
-- include: cloudkitty_domain_setup.yml
+- include_tasks: cloudkitty_service_setup.yml
   when: inventory_hostname == groups['cloudkitty_all'][0]
   tags:
     - cloudkitty-config
 
-- include: cloudkitty_db_setup.yml
+- import_tasks: mq_setup.yml
+  when:
+    - inventory_hostname == groups['cloudkitty_all'][0]
+  vars:
+    _oslomsg_rpc_setup_host: "{{ cloudkitty_oslomsg_rpc_setup_host }}"
+    _oslomsg_rpc_userid: "{{ cloudkitty_oslomsg_rpc_userid }}"
+    _oslomsg_rpc_password: "{{ cloudkitty_oslomsg_rpc_password }}"
+    _oslomsg_rpc_vhost: "{{ cloudkitty_oslomsg_rpc_vhost }}"
+    _oslomsg_rpc_transport: "{{ cloudkitty_oslomsg_rpc_transport }}"
+    _oslomsg_notify_setup_host: "{{ cloudkitty_oslomsg_notify_setup_host }}"
+    _oslomsg_notify_userid: "{{ cloudkitty_oslomsg_notify_userid }}"
+    _oslomsg_notify_password: "{{ cloudkitty_oslomsg_notify_password }}"
+    _oslomsg_notify_vhost: "{{ cloudkitty_oslomsg_notify_vhost }}"
+    _oslomsg_notify_transport: "{{ cloudkitty_oslomsg_notify_transport }}"
+  tags:
+    - common-mq
+    - cloudkitty-config
+
+- include_tasks: cloudkitty_db_setup.yml
   when: inventory_hostname == groups['cloudkitty_all'][0]
   tags:
     - cloudkitty-config
 
-- include: "cloudkitty_init_{{ ansible_service_mgr }}.yml"
-  static: no
+- name: Run the systemd service role
+  include_role:
+    name: systemd_service
+    private: true
+  vars:
+    systemd_user_name: "{{ cloudkitty_system_user_name }}"
+    systemd_group_name: "{{ cloudkitty_system_group_name }}"
+    systemd_tempd_prefix: openstack
+    systemd_slice_name: cloudkitty
+    systemd_lock_path: /var/lock/cloudkitty
+    systemd_CPUAccounting: true
+    systemd_BlockIOAccounting: true
+    systemd_MemoryAccounting: true
+    systemd_TasksAccounting: true
+    systemd_services:
+      - service_name: "{{ service_var.service_name }}"
+        enabled: yes
+        state: started
+        execstarts: "{{ service_var.execstarts }}"
+        execreloads: "{{ service_var.execreloads | default([]) }}"
+        config_overrides: "{{ service_var.init_config_overrides }}"
+  with_items: "{{ filtered_cloudkitty_services }}"
+  loop_control:
+    loop_var: service_var
   tags:
-    - cloudkitty-setup
+    - cloudkitty-config
+    - systemd-service
 
-- include: cloudkitty_apache.yml
+- include_tasks: cloudkitty_apache.yml
   static: no
   when:
     - cloudkitty_use_mod_wsgi | bool
   tags:
     - cloudkitty-setup
+    - systemd-service
 
 - name: Flush handlers
   meta: flush_handlers

@@ -23,16 +23,6 @@
         log_dirs:
           - src: "/openstack/log/{{ inventory_hostname }}-cloudkitty"
             dest: "/var/log/cloudkitty"
-    - include: common-tasks/rabbitmq-vhost-user.yml
-      vars:
-        user: "{{ cloudkitty_rabbitmq_userid }}"
-        password: "{{ cloudkitty_rabbitmq_password }}"
-        vhost: "{{ cloudkitty_rabbitmq_vhost }}"
-        _rabbitmq_host_group: "{{ cloudkitty_rabbitmq_host_group }}"
-      when:
-        - inventory_hostname == groups['cloudkitty_api'][0]
-        - groups[cloudkitty_rabbitmq_host_group] | length > 0
-      run_once: yes
 
   roles:
     - role: "os_cloudkitty"
@@ -50,6 +40,7 @@
     cloudkitty_galera_user: cloudkitty
     cloudkitty_galera_database: cloudkitty
     cloudkitty_galera_address: "{{ galera_address }}"
+    cloudkitty_venv_tag: "{{ openstack_release }}"
   environment: "{{ deployment_environment_variables | default({}) }}"
   tags:
     - cloudkitty

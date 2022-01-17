@@ -2,8 +2,8 @@
 Team and repository tags
 ========================
 
-.. image:: http://governance.openstack.org/badges/openstack-ansible-os_cloudkitty.svg
-    :target: http://governance.openstack.org/reference/tags/index.html
+.. image:: https://governance.openstack.org/tc/badges/openstack-ansible-os_cloudkitty.svg
+    :target: https://governance.openstack.org/tc/reference/tags/index.html
 
 .. Change things from this point on
 
@@ -24,7 +24,8 @@ Required Variables
 .. code-block:: yaml
 
     cloudkitty_service_password
-    cloudkitty_rabbitmq_password
+    cloudkitty_oslomsg_rpc_password
+    cloudkitty_oslomsg_notify_password
     cloudkitty_container_mysql_password
     cloudkitty_galera_address
 
@@ -33,7 +34,7 @@ Example Playbook
 
 .. code-block:: yaml
 
-    - name: Install cloudkitty server
+    - name: Install cloudkitty service
       hosts: cloudkitty_all
       user: root
       roles:
@@ -44,4 +45,17 @@ Example Playbook
         cloudkitty_galera_address: "{{ internal_lb_vip_address }}"
         cloudkitty_container_mysql_password: "SuperSecretePassword1"
         cloudkitty_service_password: "SuperSecretePassword2"
-        cloudkitty_rabbitmq_password: "SuperSecretePassword3"
+        cloudkitty_oslomsg_rpc_password: "SuperSecretePassword3"
+        cloudkitty_oslomsg_notify_password: "SuperSecretePassword4"
+
+Documentation for the project can be found at:
+  https://docs.openstack.org/openstack-ansible-os_cloudkitty/latest/
+
+Release notes for the project can be found at:
+  https://docs.openstack.org/releasenotes/openstack-ansible-os_cloudkitty/
+
+The project source code repository is located at:
+  https://git.openstack.org/cgit/openstack/openstack-ansible-os_cloudkitty/
+
+The project home is at:
+  https://launchpad.net/openstack-ansible

@@ -17,6 +17,9 @@
 cache_timeout: 600
 
 cloudkitty_devel_distro_packages:
+  - build-essential
+  - git-core
+  - libsystemd-dev
   - cmake
   - gcc
   - python3-dev
@@ -27,6 +30,8 @@ cloudkitty_distro_packages:
   - apache2
   - apache2-utils
   - git
+  - python-systemd
+  - python3-systemd
   - libapache2-mod-wsgi
   - libxml2
 

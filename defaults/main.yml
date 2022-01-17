@@ -16,8 +16,11 @@
 ## Verbosity Options
 debug: False
 
-#python venv executable
-cloudkitty_venv_python_executable: "{{ openstack_venv_python_executable | default('python3') }}"
+# Set the host which will execute the shade modules
+# for the service setup. The host must already have
+# clouds.yaml properly configured.
+cloudkitty_service_setup_host: "{{ openstack_service_setup_host | default('localhost') }}"
+cloudkitty_service_setup_host_python_interpreter: "{{ openstack_service_setup_host_python_interpreter | default((cloudkitty_service_setup_host == 'localhost') | ternary(ansible_playbook_python, ansible_python['executable'])) }}"
 
 # Set the package install state for distribution and pip packages
 # Options are 'present' and 'latest'
@@ -26,11 +29,28 @@ cloudkitty_pip_package_state: "latest"
 
 cloudkitty_service_user_name: cloudkitty
 
-cloudkitty_rabbitmq_userid: cloudkitty
-cloudkitty_rabbitmq_vhost: /cloudkitty
-cloudkitty_rabbitmq_port: 5672
-cloudkitty_rabbitmq_servers: 127.0.0.1
-cloudkitty_rabbitmq_use_ssl: False
+## Oslo Messaging info
+
+# RPC
+cloudkitty_oslomsg_rpc_host_group: "{{ oslomsg_rpc_host_group | default('rabbitmq_all') }}"
+cloudkitty_oslomsg_rpc_setup_host: "{{ (cloudkitty_oslomsg_rpc_host_group in groups) | ternary(groups[cloudkitty_oslomsg_rpc_host_group][0], 'localhost') }}"
+cloudkitty_oslomsg_rpc_transport: "{{ oslomsg_rpc_transport | default('rabbit') }}"
+cloudkitty_oslomsg_rpc_servers: "{{ oslomsg_rpc_servers | default('127.0.0.1') }}"
+cloudkitty_oslomsg_rpc_port: "{{ oslomsg_rpc_port | default('5672') }}"
+cloudkitty_oslomsg_rpc_use_ssl: "{{ oslomsg_rpc_use_ssl | default(False) }}"
+cloudkitty_oslomsg_rpc_userid: cloudkitty
+cloudkitty_oslomsg_rpc_vhost: /cloudkitty
+
+# Notify
+cloudkitty_oslomsg_notify_host_group: "{{ oslomsg_notify_host_group | default('rabbitmq_all') }}"
+cloudkitty_oslomsg_notify_setup_host: "{{ (cloudkitty_oslomsg_notify_host_group in groups) | ternary(groups[cloudkitty_oslomsg_notify_host_group][0], 'localhost') }}"
+cloudkitty_oslomsg_notify_transport: "{{ oslomsg_notify_transport | default('rabbit') }}"
+cloudkitty_oslomsg_notify_servers: "{{ oslomsg_notify_servers | default('127.0.0.1') }}"
+cloudkitty_oslomsg_notify_port: "{{ oslomsg_notify_port | default('5672') }}"
+cloudkitty_oslomsg_notify_use_ssl: "{{ oslomsg_notify_use_ssl | default(False) }}"
+cloudkitty_oslomsg_notify_userid: "{{ cloudkitty_oslomsg_rpc_userid }}"
+cloudkitty_oslomsg_notify_password: "{{ cloudkitty_oslomsg_rpc_password }}"
+cloudkitty_oslomsg_notify_vhost: "{{ cloudkitty_oslomsg_rpc_vhost }}"
 
 cloudkitty_system_group_name: cloudkitty
 cloudkitty_system_user_name: cloudkitty
@@ -41,15 +61,23 @@ cloudkitty_system_home_folder: "/var/lib/{{ cloudkitty_system_user_name }}"
 cloudkitty_venv_tag: untagged
 cloudkitty_bin: "/openstack/venvs/cloudkitty-{{ cloudkitty_venv_tag }}/bin"
 
+# venv_download, even when true, will use the fallback method of building the
+# venv from scratch if the venv download fails.
+cloudkitty_venv_download: "{{ not cloudkitty_developer_mode | bool }}"
+cloudkitty_venv_download_url: http://127.0.0.1/venvs/untagged/ubuntu/cloudkitty.tgz
+
+cloudkitty_venv_python_executable: python3
+cloudkitty_venv_rebuild: no
+
 cloudkitty_git_repo: https://git.openstack.org/openstack/cloudkitty
-cloudkitty_git_install_branch: stable/queens
+cloudkitty_git_install_branch: 'stable/rocky'
 
 cloudkitty_developer_constraints:
   - "git+{{ cloudkitty_git_repo }}@{{ cloudkitty_git_install_branch }}#egg=cloudkitty"
 
 cloudkitty_developer_mode: false
 cloudkitty_notification_topics: notifications
-cloudkitty_collect_services: compute
+cloudkitty_collected_services: compute
 cloudkitty_collector: gnocchi
 cloudkitty_service_project_domain_id: default
 cloudkitty_service_project_name: "service"
@@ -61,9 +89,12 @@ cloudkitty_output_backend: cloudkitty.backend.file.FileBackend
 cloudkitty_output_pipeline: osrf
 cloudkitty_output_basepath: /var/cloudkitty/reports
 
+cloudkitty_db_setup_host: "{{ ('galera_all' in groups) | ternary(groups['galera_all'][0], 'localhost') }}"
 cloudkitty_galera_address: "{{ galera_address | default('127.0.0.1') }}"
 cloudkitty_galera_database: cloudkitty
 cloudkitty_galera_user: cloudkitty
+cloudkitty_database_connection: >-
+  mysql+pymysql://{{ cloudkitty_galera_user }}:{{ cloudkitty_container_mysql_password }}@{{ cloudkitty_galera_address }}/{{ cloudkitty_galera_database }}?charset=utf8
 
 ## Service Type and Data
 cloudkitty_service_region: RegionOne
@@ -112,6 +143,7 @@ cloudkitty_ssl_self_signed_subject: "/C=US/ST=Texas/L=San Antonio/O=IT/CN={{ int
 cloudkitty_cloudkitty_conf_overrides: {}
 cloudkitty_policy_overrides: {}
 cloudkitty_api_paste_ini_overrides: {}
+
 cloudkitty_api_init_overrides: {}
 cloudkitty_processor_init_overrides: {}
 cloudkitty_metrics_overrides: {}
@@ -119,28 +151,30 @@ cloudkitty_metrics_overrides: {}
 ## Service Name-Group Mapping
 cloudkitty_services:
   cloudkitty-api:
-    group: cloudkitty_api
+    group: cloudkitty_all
     service_name: cloudkitty-api
     service_enabled: "{{ cloudkitty_use_mod_wsgi | ternary(false, true) }}"
     init_config_overrides: "{{ cloudkitty_api_init_overrides }}"
+    execstarts: "{{ cloudkitty_bin }}/cloudkitty-api"
+    start_order: 1
   cloudkitty-processor:
-    group: cloudkitty_api
+    group: cloudkitty_all
     service_name: cloudkitty-processor
     service_enabled: true
     init_config_overrides: "{{ cloudkitty_processor_init_overrides }}"
-
+    execstarts: "{{ cloudkitty_bin }}/cloudkitty-processor"
+    start_order: 2
 
 cloudkitty_pip3_install_args: "{{ pip_install_options | default('') }}"
-cloudkitty_venv_rebuild: no
-
 cloudkitty_pip3_packages:
-  - git+git://github.com/openstack/cloudkitty.git@5e16701f4787336dae9732f42399ed64192ec3e4
-  - cryptography
+  - git+git://github.com/openstack/cloudkitty.git@stein-em
+  - cryptography==3.2.1
   - msgpack-python
   - osprofiler
   - PyMySQL
   - python-memcached
   - SQLAlchemy>=1.0.10
+  - systemd-python
   - tooz
   - uwsgi
   - mod_wsgi
@@ -155,7 +189,3 @@ cloudkitty_requires_pip3_packages:
 # pip packages required by this role. The value is picked up
 # by the py_pkgs lookup.
 cloudkitty_role_project_group: cloudkitty_all
-
-# The messaging driver to use, defaults to rabbit. Other drivers
-# include qpid and zmq. (string value)
-cloudkitty_database_connection: "mysql+pymysql://{{ cloudkitty_galera_user }}:{{ cloudkitty_container_mysql_password }}@{{ cloudkitty_galera_address }}/{{ cloudkitty_galera_database }}?charset=utf8"

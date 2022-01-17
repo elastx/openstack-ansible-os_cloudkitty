@@ -14,17 +14,7 @@
 
 - project:
     templates:
+      - openstack-ansible-role-jobs
       - check-requirements
       - publish-openstack-sphinx-docs
       - release-notes-jobs
-    check:
-      jobs:
-        - openstack-ansible-linters
-        - openstack-ansible-functional-ubuntu-xenial
-    experimental:
-      jobs:
-        - openstack-ansible-integrated-deploy-aio
-    gate:
-      jobs:
-        - openstack-ansible-linters
-        - openstack-ansible-functional-ubuntu-xenial

@@ -13,11 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+cloudkitty_devel_distro_packages:
+  - systemd-devel
+
 cloudkitty_distro_packages:
   - git
+  - systemd-python
   - httpd
   - httpd-tools
-  - mod_wsig
+  - mod_wsgi
 
 cloudkitty_system_service_name: httpd
 cloudkitty_apache_config:
