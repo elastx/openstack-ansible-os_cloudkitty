@@ -97,7 +97,7 @@ cloudkitty_database_connection: >-
   mysql+pymysql://{{ cloudkitty_galera_user }}:{{ cloudkitty_container_mysql_password }}@{{ cloudkitty_galera_address }}/{{ cloudkitty_galera_database }}?charset=utf8
 
 ## Service Type and Data
-cloudkitty_service_region: RegionOne
+cloudkitty_service_region: "{{ keystone_service_region | default('RegionOne') }}"
 cloudkitty_service_name: cloudkitty
 cloudkitty_service_type: rating
 cloudkitty_service_port: 8089
@@ -178,6 +178,7 @@ cloudkitty_pip3_packages:
   - tooz
   - uwsgi
   - mod_wsgi
+  - pyparsing==3.0.0a1
 
 cloudkitty_requires_pip3_packages:
   - virtualenv
