@@ -171,10 +171,11 @@ cloudkitty_pip3_packages:
   - cryptography==3.2.1
   - msgpack-python
   - osprofiler
-  - PyMySQL
+  - PyMySQL<0.10
   - python-memcached
   - SQLAlchemy>=1.0.10
   - systemd-python
+  - tenacity>=3.2.1,<7.0.0
   - tooz
   - uwsgi
   - mod_wsgi
