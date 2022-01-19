@@ -176,7 +176,7 @@ cloudkitty_pip3_packages:
   - SQLAlchemy>=1.0.10
   - systemd-python
   - tenacity>=3.2.1,<7.0.0
-  - tooz
+  - tooz>=1.66,<1.67
   - uwsgi
   - mod_wsgi
   - pyparsing==3.0.0a1
