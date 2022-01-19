@@ -27,6 +27,7 @@ connection = {{ cloudkitty_database_connection }}
 
 [gnocchi_collector]
 auth_section = keystone_authtoken
+region_name = {{ keystone_service_region }}
 
 [keystone_authtoken]
 insecure = {{ keystone_service_internaluri_insecure | bool }}
