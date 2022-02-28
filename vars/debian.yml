@@ -39,6 +39,7 @@ cloudkitty_system_service_name: apache2
 cloudkitty_apache_config:
   - { src: "cloudkitty-ports.conf.j2", dest: "/etc/apache2/ports.conf" }
   - { src: "cloudkitty-httpd.conf.j2", dest: "/etc/apache2/sites-available/cloudkitty-httpd.conf" }
+  - { src: "wsgi.load.j2", dest: "/etc/apache2/mods-available/wsgi.load" }
 cloudkitty_apache_default_sites:
   - "/etc/apache2/sites-enabled/000-default.conf"
 cloudkitty_apache_site_available: "/etc/apache2/sites-available/cloudkitty-httpd.conf"

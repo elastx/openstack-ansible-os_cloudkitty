@@ -180,6 +180,21 @@ cloudkitty_pip3_packages:
   - uwsgi
   - mod_wsgi
   - pyparsing==3.0.0a1
+  - Werkzeug<0.16.1
+  - keystonemiddleware==5.2.2
+  - oslo.cache==1.30.4
+  - oslo.concurrency==3.27.0
+  - oslo.config==6.4.2
+  - oslo.context==2.21.0
+  - oslo.db==4.40.2
+  - oslo.i18n==3.21.0
+  - oslo.log==3.39.2
+  - oslo.messaging==8.1.4
+  - oslo.middleware==3.36.0
+  - oslo.policy==1.38.1
+  - oslo.serialization==2.27.0
+  - oslo.service==1.31.8
+  - oslo.utils==3.36.5
 
 cloudkitty_requires_pip3_packages:
   - virtualenv
