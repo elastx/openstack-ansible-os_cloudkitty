@@ -195,6 +195,9 @@ cloudkitty_pip3_packages:
   - oslo.serialization==2.27.0
   - oslo.service==1.31.8
   - oslo.utils==3.36.5
+  - eventlet==0.26.1
+  - amqp>=2.4.2,<3
+  - kombu>=4.4.0,<5
 
 cloudkitty_requires_pip3_packages:
   - virtualenv
