@@ -65,6 +65,7 @@ cloudkitty_pip_install_args: "{{ pip_install_options | default('') }}"
 
 cloudkitty_venv_tag: "{{ venv_tag | default('untagged') }}"
 cloudkitty_bin: "/openstack/venvs/cloudkitty-{{ cloudkitty_venv_tag }}/bin"
+cloudkitty_uwsgi_venv: "/openstack/venvs/cloudkitty-{{ cloudkitty_venv_tag }}"
 
 cloudkitty_git_repo: https://git.openstack.org/openstack/cloudkitty
 cloudkitty_git_install_branch: master
