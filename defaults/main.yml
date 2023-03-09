@@ -153,6 +153,7 @@ cloudkitty_pip_packages:
   - SQLAlchemy>=1.0.10
   - systemd-python
   - tooz
+  - redis
 
 ## (Qdrouterd) integration
 # TODO(ansmith): Change structure when more backends will be supported
