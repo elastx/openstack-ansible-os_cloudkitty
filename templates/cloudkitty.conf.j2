@@ -27,9 +27,9 @@ auth_section = keystone_authtoken
 connection = {{ cloudkitty_database_connection }}
 
 [fetcher]
-backend = {{ cloudkitty_collector }}
+backend = {{ cloudkitty_fetcher }}
 
-[fetcher_{{ cloudkitty_collector }}]
+[fetcher_{{ cloudkitty_fetcher }}]
 auth_section = keystone_authtoken
 
 [keystone_authtoken]
@@ -51,9 +51,11 @@ service_token_roles = {{ cloudkitty_service_role_name }}
 [oslo_messaging_qpid]
 
 [oslo_messaging_rabbit]
+heartbeat_in_pthread = False
 ssl = {{ cloudkitty_oslomsg_notify_use_ssl | bool }}
 
 [oslo_messaging_notifications]
+heartbeat_in_pthread = False
 transport_url = {{ cloudkitty_oslomsg_notify_transport }}://{% for host in cloudkitty_oslomsg_notify_servers.split(',') %}{{ cloudkitty_oslomsg_notify_userid }}:{{ cloudkitty_oslomsg_notify_password }}@{{ host }}:{{ cloudkitty_oslomsg_notify_port }}{% if not loop.last %},{% else %}/{{ cloudkitty_oslomsg_notify_vhost }}{% if cloudkitty_oslomsg_notify_use_ssl | bool %}?ssl=1&ssl_version={{ cloudkitty_oslomsg_notify_ssl_version }}&ssl_ca_file={{ cloudkitty_oslomsg_notify_ssl_ca_file }}{% else %}?ssl=0{% endif %}{% endif %}{% endfor %}
 
 [output]

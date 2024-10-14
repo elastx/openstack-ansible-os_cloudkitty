@@ -79,6 +79,7 @@ cloudkitty_git_constraints:
 
 cloudkitty_notification_topics: notifications
 cloudkitty_collector: gnocchi
+cloudkitty_fetcher: gnocchi
 cloudkitty_service_project_domain_id: default
 cloudkitty_service_project_name: "service"
 cloudkitty_service_user_domain_id: default
